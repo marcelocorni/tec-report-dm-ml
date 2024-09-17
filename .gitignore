@@ -1,0 +1,7 @@
+latex_template_1_8/
+*.pdf
+*.zip
+output_isolation_forest_graphs/
+output_auto_encoder_graphs/
+__pycache__/
+detection/
