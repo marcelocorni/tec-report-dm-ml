@@ -59,7 +59,7 @@ blockno_transaction_hash = df[['blockno', 'transaction_hash']]
 scaler = MinMaxScaler()
 df_scaled = scaler.fit_transform(df[features])
 
-# Definir o Autoencoder com 13 features de entrada e 3 dimensões no espaço latente
+# Definir o Autoencoder com 12 features de entrada e 4 dimensões no espaço latente
 input_dim = 12
 latent_space_dim = 4
 learning_rate = 0.05

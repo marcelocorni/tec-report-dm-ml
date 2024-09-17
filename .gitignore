@@ -1,5 +1,8 @@
 latex_template_1_8/
-*.pdf
+mitigacao.pdf
+mev_definition.pdf
+mitigacao.pdf
+correlacao_s_d_i.pdf
 *.zip
 output_isolation_forest_graphs/
 output_auto_encoder_graphs/
