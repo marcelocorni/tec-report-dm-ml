@@ -105,7 +105,7 @@ def main():
 
     # Protótipo do sistema de classificação de Front-Running
     st.markdown('## Protótipo do Sistema de Classificação de Front-Running')
-    st.image('../images/prototipo.png', use_column_width=True)
+    st.image('../images/classificador.png', use_column_width=True)
    
 if __name__ == '__main__':
     main()

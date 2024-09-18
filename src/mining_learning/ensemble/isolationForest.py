@@ -1,3 +1,4 @@
+from bayes_opt import BayesianOptimization
 import pandas as pd
 import numpy as np
 from sklearn.preprocessing import RobustScaler
@@ -8,7 +9,7 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 import sys
 import os
-from sklearn.metrics import roc_curve, auc
+from sklearn.metrics import roc_auc_score, roc_curve, auc
 import time
 
 # Adicionar o diretório principal do projeto no sys.path
@@ -73,19 +74,59 @@ print("Dividindo os dados em treino e teste...")
 # --- Train Test Split ---
 X_train, X_test, blockno_hash_train, blockno_hash_test = train_test_split(df_scaled, blockno_transaction_hash, test_size=0.3, random_state=42)
 
-# Definir os parâmetros a serem testados
-param_grid = {
-    'n_estimators': [50, 100, 200],
-    'max_samples': [128, 256, 512],
-    'contamination': [0.05, 0.1]
+# Função de avaliação para o Bayesian Optimization
+def isolation_forest_evaluate(n_estimators, max_samples, contamination):
+    n_estimators = int(n_estimators)
+    max_samples = int(max_samples)
+    contamination = float(contamination)
+    
+    # Treinando o modelo Isolation Forest
+    model = IsolationForest(n_estimators=n_estimators, max_samples=max_samples,
+                            contamination=contamination, random_state=42)
+    model.fit(X_train)
+    
+    # Previsões no conjunto de teste
+    predictions = model.predict(X_test)
+    anomaly_scores = model.decision_function(X_test)
+    
+    # Assumindo que a maioria dos dados são normais (1) e as anomalias (-1)
+    y_true = np.ones(len(X_test))
+    y_true[predictions == -1] = -1
+    
+    # AUC como métrica de otimização
+    auc_score = roc_auc_score(y_true, anomaly_scores)
+    
+    return auc_score
+
+# Definindo o intervalo de parâmetros para otimização
+param_bounds = {
+    'n_estimators': (50, 300),  # Número de estimadores (árvores)
+    'max_samples': (100, len(X_train)),  # Número máximo de amostras
+    'contamination': (0.01, 0.2)  # Proporção de anomalias
 }
+
+# Otimizador Bayesiano
+optimizer = BayesianOptimization(
+    f=isolation_forest_evaluate,
+    pbounds=param_bounds,
+    random_state=42
+)
+
+# Realizando a otimização
+# optimizer.maximize(
+#     init_points=5,  # Número de pontos para explorar aleatoriamente antes da otimização
+#     n_iter=25  # Número de iterações da otimização
+# )
+
+# # Exibindo os melhores parâmetros
+# print("Melhores parâmetros encontrados:", optimizer.max)
 
 print("Treinando o modelo...")
 
 # --- Treinamento do Modelo ---
-max_samples = int(0.1 * len(df)) # Definir o número máximo de amostras para 10% do total
-n_estimators = 150  # Número de árvores na floresta
-contamination = 0.05  # Proporção de anomalias no conjunto de dados
+max_samples = 1.0 # Definir o número máximo de amostras para 10% do total
+n_estimators = 233  # Número de árvores na floresta
+contamination = 0.001  # Proporção de anomalias no conjunto de dados
 
 # Treinar o modelo com os melhores parâmetros encontrados no conjunto de treino
 isolation_forest = IsolationForest(n_estimators=n_estimators, max_samples=max_samples,
