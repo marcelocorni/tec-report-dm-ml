@@ -1,12 +1,16 @@
 import os
 import sys
+from bayes_opt import BayesianOptimization
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import RobustScaler, MinMaxScaler
-from sklearn.metrics import roc_curve, auc
+from sklearn.metrics import roc_auc_score, roc_curve, auc
+from tensorflow.keras.optimizers import Adam
+from tensorflow.keras.models import Sequential
+from tensorflow.keras.layers import Dense, Input
 from autoEncoder import Autoencoder
 import time
 
@@ -33,7 +37,7 @@ fields = """
 
 where_clause = "WHERE Status = 'Success'"
 orderby = "blockno, transaction_hash"
-limit = 0
+limit = 100000
 
 df = db_service.load_transactions_into_dataframe(fields=fields, where_clause=where_clause, orderby=orderby, limit=limit)
 
@@ -61,13 +65,74 @@ df_scaled = scaler.fit_transform(df[features])
 
 # Definir o Autoencoder com 12 features de entrada e 4 dimensões no espaço latente
 input_dim = 12
-latent_space_dim = 4
-learning_rate = 0.05
+latent_space_dim = 38
+learning_rate = 0.007
 batch_size = 32
-epochs = 20
+epochs = 95
 
 # Dividir os dados em treino e teste
 X_train, X_test, blockno_hash_train, blockno_hash_test = train_test_split(df_scaled, blockno_transaction_hash, test_size=0.3, random_state=42)
+
+
+# Função de avaliação para o Bayesian Optimization
+def autoencoder_evaluate(encoding_dim, epochs, learning_rate):
+    encoding_dim = int(encoding_dim)  # Dimensão da camada intermediária
+    epochs = int(epochs)  # Número de épocas
+    learning_rate = float(learning_rate)  # Taxa de aprendizado
+
+    # Definindo o modelo Autoencoder
+    input_dim = X_train.shape[1]
+    model = Sequential([
+        Input(shape=(input_dim,)),  # Definindo a camada de entrada explicitamente
+        Dense(encoding_dim, activation='relu'),
+        Dense(input_dim, activation='sigmoid')  # Reconstrução
+    ])
+
+    # Compilando o modelo
+    optimizer = Adam(learning_rate=learning_rate)
+    model.compile(optimizer=optimizer, loss='mean_squared_error')
+
+    # Treinando o modelo Autoencoder
+    model.fit(X_train, X_train, epochs=epochs, batch_size=32, shuffle=True, verbose=0)
+
+    # Previsões no conjunto de teste
+    reconstructions = model.predict(X_test)
+    mse = np.mean(np.power(X_test - reconstructions, 2), axis=1)
+
+    # Assumindo que valores com erro alto são anomalias
+    threshold = np.percentile(mse, 95)  # Definir threshold (5% superior)
+    predictions = (mse > threshold).astype(int)
+    y_true = np.ones(len(X_test))
+    y_true[predictions == 1] = -1
+
+    # AUC como métrica de otimização
+    auc_score = roc_auc_score(y_true, mse)
+
+    return auc_score
+
+# Definindo o intervalo de parâmetros para otimização
+param_bounds = {
+    'encoding_dim': (1, 100),  # Número de neurônios na camada intermediária
+    'epochs': (10, 100),  # Número de épocas
+    'learning_rate': (0.0001, 0.01)  # Taxa de aprendizado
+}
+
+# # Otimizador Bayesiano
+# optimizer = BayesianOptimization(
+#     f=autoencoder_evaluate,
+#     pbounds=param_bounds,
+#     random_state=42
+# )
+
+# # Realizando a otimização
+# optimizer.maximize(
+#     init_points=5,  # Número de pontos para explorar aleatoriamente antes da otimização
+#     n_iter=25  # Número de iterações da otimização
+# )
+
+# # Exibindo os melhores parâmetros
+# print("Melhores parâmetros encontrados:", optimizer.max)
+
 
 # Criar o Autoencoder simplificado
 autoencoder = Autoencoder(input_dim, latent_space_dim, learning_rate)
