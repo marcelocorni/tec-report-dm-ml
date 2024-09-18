@@ -8,3 +8,4 @@ output_isolation_forest_graphs/
 output_auto_encoder_graphs/
 __pycache__/
 detection/
+referencias/
