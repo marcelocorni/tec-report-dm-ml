@@ -102,6 +102,10 @@ def main():
     # Colocar a cor de todos os textos do gráfico para preto para melhor visualização em fundo branco
     st.plotly_chart(fig)
     st.plotly_chart(fig2)
+
+    # Protótipo do sistema de classificação de Front-Running
+    st.markdown('## Protótipo do Sistema de Classificação de Front-Running')
+    st.image('../images/prototipo.png', use_column_width=True)
    
 if __name__ == '__main__':
     main()
