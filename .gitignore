@@ -9,3 +9,4 @@ output_auto_encoder_graphs/
 __pycache__/
 detection/
 referencias/
+cluster/

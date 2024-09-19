@@ -37,7 +37,7 @@ fields = """
 
 where_clause = "WHERE Status = 'Success'"
 orderby = "blockno, transaction_hash"
-limit = 100000
+limit = 0
 
 df = db_service.load_transactions_into_dataframe(fields=fields, where_clause=where_clause, orderby=orderby, limit=limit)
 

@@ -113,13 +113,13 @@ optimizer = BayesianOptimization(
 )
 
 # Realizando a otimização
-# optimizer.maximize(
-#     init_points=5,  # Número de pontos para explorar aleatoriamente antes da otimização
-#     n_iter=25  # Número de iterações da otimização
-# )
+optimizer.maximize(
+    init_points=5,  # Número de pontos para explorar aleatoriamente antes da otimização
+    n_iter=25  # Número de iterações da otimização
+)
 
-# # Exibindo os melhores parâmetros
-# print("Melhores parâmetros encontrados:", optimizer.max)
+# Exibindo os melhores parâmetros
+print("Melhores parâmetros encontrados:", optimizer.max)
 
 print("Treinando o modelo...")
 
