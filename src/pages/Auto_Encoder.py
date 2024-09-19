@@ -15,8 +15,16 @@ def app():
     percentual_anomalias = total_anomalias / total_transactions * 100
 
     st.write('## Introdução')
-    st.write("O Autoencoder foi treinado com 20 épocas e 4 dimensões no espaço latente, com taxa de aprendizado de 0.05 e tamanho de lote de 32 e 12 features de entrada, normalizadas com MinMaxScaler.")
+    st.write("O Autoencoder foi treinado com os parâmetros abaixo que foram encontrados pelo Baeysian Optimization.")
     
+    st.code("""
+                input_dim = 12
+                latent_space_dim = 38
+                learning_rate = 0.007
+                batch_size = 32
+                epochs = 95
+            """)
+
     st.write('## Anomalias')
     st.write(df_anomalias.head())
 

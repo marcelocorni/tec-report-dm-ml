@@ -124,9 +124,9 @@ print("Melhores parâmetros encontrados:", optimizer.max)
 print("Treinando o modelo...")
 
 # --- Treinamento do Modelo ---
-max_samples = 1.0 # Definir o número máximo de amostras para 10% do total
-n_estimators = 233  # Número de árvores na floresta
-contamination = 0.001  # Proporção de anomalias no conjunto de dados
+max_samples = 1.0 
+n_estimators = 233
+contamination = 0.001 
 
 # Treinar o modelo com os melhores parâmetros encontrados no conjunto de treino
 isolation_forest = IsolationForest(n_estimators=n_estimators, max_samples=max_samples,

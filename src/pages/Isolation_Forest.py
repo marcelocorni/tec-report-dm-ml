@@ -15,7 +15,13 @@ def app():
     percentual_anomalias = total_anomalias / total_transactions * 100
 
     st.write('## Introdução')
-    st.write("O Isolation Forest foi treinado com 150 estimadores, máximo de amostras equivalente a 10% do tamanho do dataset, contaminação de 0.05 e normalizado com RobustScaler.")
+    st.write("O Isolation Forest foi treinado com os parâmetros abaixo que foram encontrados pelo Baeysian Optimization.")
+
+    st.code("""
+            max_samples = 1.0 
+            n_estimators = 233
+            contamination = 0.001 
+            """)
 
     st.write('## Anomalias')
     st.write(df_anomalias.head())
